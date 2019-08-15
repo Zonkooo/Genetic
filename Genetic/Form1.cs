@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,39 +17,38 @@ namespace Genetic
         {
             InitializeComponent();
             chart1.Series.Clear();
-            _series1 = new Series
+
+            var rand = new Random(0);
+            var solvers = new ISolver[]
             {
-                Name = "Series1",
-                ChartType = SeriesChartType.StepLine,
-                BorderWidth = 3,
+                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
+                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
+                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
+                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
             };
 
-            chart1.Series.Add(_series1);
-            _series1.Points.AddXY(0, 0);
-
-            _start = DateTime.UtcNow;
-            Task.Run(() => Walk());
-        }
-
-        private void Walk()
-        {
-            var rand = new Random();
-            var sum = 0;
-            for (int i = 0; i < 10000; i++)
+            var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float>>>();
+            Parallel.ForEach(solvers, solver =>
             {
-                Thread.Sleep(300);
-                sum += rand.Next(-10, 11);
-                _current = sum;
+                var series = new Series
+                {
+                    ChartType = SeriesChartType.StepLine,
+                    BorderWidth = 3,
+                };
+                chart1.Series.Add(series);
+                solversWithCallbacks.Add(new Tuple<ISolver, Action<int, float>>(solver, (int gen, float score) =>
+                {
+                    Invoke((MethodInvoker) (() =>
+                    {
+                        series.Points.AddXY(gen, score);
+                        series.Name = solver.Name + $" ({score:0,0.0})";
+                        chart1.Invalidate();
+                    }));
+                }));
+            });
 
-                Invoke((MethodInvoker)UpdateChart);
-            }
-        }
-
-        private void UpdateChart()
-        {
-            var now = DateTime.UtcNow;
-            _series1.Points.AddXY((now - _start).TotalSeconds, _current);
-            chart1.Invalidate();
+            var runner = new Runner(solversWithCallbacks);
+            Task.Run(() => runner.Run(rand));
         }
     }
 }
