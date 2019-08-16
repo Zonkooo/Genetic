@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -9,10 +8,6 @@ namespace Genetic
 {
     public partial class Form1 : Form
     {
-        private readonly Series _series1;
-        private volatile int _current = 0;
-        private readonly DateTime _start;
-
         public Form1()
         {
             InitializeComponent();
@@ -22,9 +17,7 @@ namespace Genetic
             var solvers = new ISolver[]
             {
                 new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
-                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
-                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
-                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
+                new AnnealingSolver(Runner.PopSize, 600, 1, new Random(rand.Next())),
             };
 
             var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float>>>();

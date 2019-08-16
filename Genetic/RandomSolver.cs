@@ -6,9 +6,11 @@ namespace Genetic
 {
     class RandomSolver : ISolver
     {
+        private static int distinguisher = 1; //because we cannot have twice the same name
+
         private readonly int _nbCities;
         private readonly Random _rand;
-        public string Name => "Random" + new Random().Next(100);
+        public string Name { get; }
         public int NbChildrenWanted { get; }
 
         public RandomSolver(int popSize, int nbCities, Random rand = null)
@@ -16,6 +18,7 @@ namespace Genetic
             _nbCities = nbCities;
             _rand = rand ?? new Random();
             NbChildrenWanted = popSize;
+            Name = $"Random {distinguisher++}";
         }
 
         public List<Solution> SelectParents(List<Solution> population)

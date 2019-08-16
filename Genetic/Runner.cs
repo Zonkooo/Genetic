@@ -11,6 +11,7 @@ namespace Genetic
 
         private readonly List<Tuple<ISolver, Action<int, float>>> _solvers;
         public volatile bool DoRun = true;
+        public static Problem _problem; //todo refactor
 
         public Runner(List<Tuple<ISolver, Action<int, float>>> solvers)
         {
@@ -35,8 +36,8 @@ namespace Genetic
 
         public void Run(Random rand)
         {
-            var problem = Problem.Generate(rand, NbCities);
-            var initialPop = GeneratePop(problem, rand);
+            _problem = Problem.Generate(rand, NbCities);
+            var initialPop = GeneratePop(_problem, rand);
             var instances = _solvers.Select(s => new Instance(s.Item1, initialPop, s.Item2)).ToList();
             int generation = 0;
             while (DoRun)
@@ -57,7 +58,7 @@ namespace Genetic
                         var parents = instance.Solver.SelectParents(instance.Pop);
                         var child = instance.Solver.Crossover(parents);
                         instance.Solver.Mutate(child);
-                        newBorns.Add(new Solution(child, generation, problem));
+                        newBorns.Add(new Solution(child, generation, _problem));
                     }
                     instance.Pop.AddRange(newBorns);
                     instance.Pop = instance.Solver.Extinction(instance.Pop, generation);
