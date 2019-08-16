@@ -31,16 +31,12 @@ namespace Genetic
 
         public int[] Crossover(List<Solution> parents)
         {
-            return parents[0].Path;
-        }
-
-        public void Mutate(int[] x)
-        {
+            var x = parents[0].Path;
             var x2 = (int[])x.Clone();
 
             //choose 2 distinct random numbers
             var from = _rand.Next(x2.Length);
-            var to = _rand.Next(x2.Length-1);
+            var to = _rand.Next(x2.Length - 1);
             if (to >= from) to++;
 
             //swap elements in x2
@@ -49,13 +45,19 @@ namespace Genetic
             x2[from] = tmp;
 
             //compute scores
-            var scoreOld = Runner._problem.Score(x);
+            var scoreOld = parents[0].Score;
             var scoreNew = Runner._problem.Score(x2);
 
             bool keep = Math.Exp((scoreOld - scoreNew) / (_k * _temperature)) > _rand.NextDouble();
 
-            if(keep)
-                Array.Copy(x2, x, x.Length);
+            if (keep)
+                return x2;
+            else
+                return x;
+        }
+
+        public void Mutate(int[] x)
+        {
         }
 
         public List<Solution> Extinction(IReadOnlyList<Solution> population, int currentGen)
