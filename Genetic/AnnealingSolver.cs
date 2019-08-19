@@ -20,7 +20,10 @@ namespace Genetic
             _k = k;
             _rand = rand ?? new Random();
             NbChildrenWanted = popSize;
-            Name = $"Annealing {initialTemperature}-{_k}";
+            if (initialTemperature == 0 || k == 0)
+                Name = "Greedy Swap";
+            else
+                Name = $"Annealing {initialTemperature}-{_k}";
         }
 
         private int i = 0;

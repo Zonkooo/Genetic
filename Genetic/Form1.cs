@@ -17,7 +17,8 @@ namespace Genetic
             var solvers = new ISolver[]
             {
                 new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
-                new AnnealingSolver(Runner.PopSize, 600, 1, new Random(rand.Next())),
+                new AnnealingSolver(Runner.PopSize, 0, 1, new Random(rand.Next())),
+                //new AnnealingSolver(Runner.PopSize, 500, 10, new Random(rand.Next())),
             };
 
             var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float, float>>>();
