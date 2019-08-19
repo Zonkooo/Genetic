@@ -20,8 +20,8 @@ namespace Genetic
                 new AnnealingSolver(Runner.PopSize, 600, 1, new Random(rand.Next())),
             };
 
-            var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float>>>();
-            Parallel.ForEach(solvers, solver =>
+            var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float, float>>>();
+            foreach (var solver in solvers)
             {
                 var series = new Series
                 {
@@ -29,16 +29,16 @@ namespace Genetic
                     BorderWidth = 3,
                 };
                 chart1.Series.Add(series);
-                solversWithCallbacks.Add(new Tuple<ISolver, Action<int, float>>(solver, (int gen, float score) =>
+                solversWithCallbacks.Add(new Tuple<ISolver, Action<int, float, float>>(solver, (int gen, float score, float time) =>
                 {
                     Invoke((MethodInvoker) (() =>
                     {
                         series.Points.AddXY(gen, score);
-                        series.Name = solver.Name + $" ({score:0,0.0})";
+                        series.Name = solver.Name + $" (s{score:0,0} t{time:0})";
                         chart1.Invalidate();
                     }));
                 }));
-            });
+            }
 
             var runner = new Runner(solversWithCallbacks);
             Task.Run(() => runner.Run(rand));

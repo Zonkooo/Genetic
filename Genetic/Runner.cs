@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Genetic
 {
@@ -8,12 +10,13 @@ namespace Genetic
     {
         public const int NbCities = 1000;
         public const int PopSize = 1000;
+        const int WindowSize = 10; //for time measurement
 
-        private readonly List<Tuple<ISolver, Action<int, float>>> _solvers;
+        private readonly List<Tuple<ISolver, Action<int, float, float>>> _solvers;
         public volatile bool DoRun = true;
         public static Problem _problem; //todo refactor
 
-        public Runner(List<Tuple<ISolver, Action<int, float>>> solvers)
+        public Runner(List<Tuple<ISolver, Action<int, float, float>>> solvers)
         {
             _solvers = solvers;
         }
@@ -22,15 +25,21 @@ namespace Genetic
         {
             public ISolver Solver { get; }
             public List<Solution> Pop { get; set; }
-            public Action<int, float> ScoreCallback { get; }
+            public Action<int, float, float> ScoreCallback { get; }
             public float Best { get; set; }
 
-            public Instance(ISolver solver, List<Solution> pop, Action<int, float> scoreCallback)
+            public Stopwatch Watch { get; }
+            public Queue<long> LastTimes { get; }
+
+            public Instance(ISolver solver, List<Solution> pop, Action<int, float, float> scoreCallback)
             {
                 Solver = solver;
                 Pop = pop;
                 ScoreCallback = scoreCallback;
                 Best = float.MaxValue;
+
+                Watch = Stopwatch.StartNew();
+                LastTimes = new Queue<long>(new long[WindowSize]);
             }
         }
 
@@ -43,13 +52,14 @@ namespace Genetic
             while (DoRun)
             {
                 generation++;
-                foreach (var instance in instances)
+                Parallel.ForEach(instances, instance =>
                 {
+                    instance.Watch.Restart();
                     var score = instance.Pop.Min(s => s.Score);
                     if (score < instance.Best)
                     {
                         instance.Best = score;
-                        instance.ScoreCallback(generation - 1, score);
+                        instance.ScoreCallback(generation - 1, score, (float) instance.LastTimes.Sum() / WindowSize);
                     }
 
                     var newBorns = new List<Solution>(instance.Solver.NbChildrenWanted);
@@ -60,9 +70,13 @@ namespace Genetic
                         instance.Solver.Mutate(child);
                         newBorns.Add(new Solution(child, generation, _problem));
                     }
+
                     instance.Pop.AddRange(newBorns);
                     instance.Pop = instance.Solver.Extinction(instance.Pop, generation);
-                }
+
+                    instance.LastTimes.Enqueue(instance.Watch.ElapsedMilliseconds);
+                    instance.LastTimes.Dequeue();
+                });
             }
         }
 
