@@ -16,9 +16,11 @@ namespace Genetic
             var rand = new Random(0);
             var solvers = new ISolver[]
             {
-                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
-                new AnnealingSolver(Runner.PopSize, 0, 1, new Random(rand.Next())),
+//                new RandomSolver(Runner.PopSize, Runner.NbCities, new Random(rand.Next())),
+//                new AnnealingSolver(Runner.PopSize, 0, 1, new Random(rand.Next())),
                 //new AnnealingSolver(Runner.PopSize, 500, 10, new Random(rand.Next())),
+                new GeneticSolver(new Random(rand.Next()), Runner.NbCities),
+                new GeneticV2(new Random(rand.Next()), Runner.NbCities), 
             };
 
             var solversWithCallbacks = new List<Tuple<ISolver, Action<int, float, float>>>();
