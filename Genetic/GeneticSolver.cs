@@ -93,7 +93,7 @@ namespace Genetic
             ;
         }
 
-        public List<Solution> Extinction(IReadOnlyList<Solution> population, int currentGen)
+        public virtual List<Solution> Extinction(IReadOnlyList<Solution> population, int currentGen)
         {
             return population.Where(s => s.Generation == currentGen).ToList();
         }
@@ -121,7 +121,7 @@ namespace Genetic
             x[idx2] = temp;
         }
 
-        public List<Solution> Extinction(IReadOnlyList<Solution> population, int currentGen)
+        public override List<Solution> Extinction(IReadOnlyList<Solution> population, int currentGen)
         {
             return population.OrderByDescending(x => x.Score).Skip((int)(0.9*population.Count)).ToList();
         }
