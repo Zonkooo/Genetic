@@ -47,7 +47,7 @@ namespace Genetic
         {
             _problem = Problem.Generate(rand, NbCities);
             var initialPop = GeneratePop(_problem, rand);
-            var instances = _solvers.Select(s => new Instance(s.Item1, initialPop, s.Item2)).ToList();
+            var instances = _solvers.Select(s => new Instance(s.Item1, new List<Solution>(initialPop), s.Item2)).ToList();
             int generation = 0;
             while (DoRun)
             {
